@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textViewDeviceUuid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="13dp"
+        android:text="DeviceName"/>
+
+    <TextView
+        android:id="@+id/textViewRssi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/textViewKey"
+        android:layout_below="@+id/textViewKey"
+        android:layout_marginTop="12dp"
+        android:text="RSSI"/>
+
+    <TextView
+        android:id="@+id/textViewPower"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/textViewRssi"
+        android:layout_alignBottom="@+id/textViewRssi"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="13dp"
+        android:text="Power"/>
+
+    <TextView
+        android:id="@+id/textViewMajorMinor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/textViewDeviceUuid"
+        android:layout_alignBottom="@+id/textViewDeviceUuid"
+        android:layout_alignEnd="@+id/textViewPower"
+        android:text="major:minor"/>
+
+    <TextView
+        android:id="@+id/textViewKey"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/textViewDeviceUuid"
+        android:layout_below="@+id/textViewDeviceUuid"
+        android:layout_marginTop="12dp"
+        android:text="Key"/>
+
+    <TextView
+        android:id="@+id/textViewMac"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/textViewMajorMinor"
+        android:layout_alignTop="@+id/textViewKey"
+        android:text="MAC"/>
+
+</RelativeLayout>

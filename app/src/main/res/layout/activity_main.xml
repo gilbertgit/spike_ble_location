@@ -11,31 +11,52 @@
     android:paddingTop="16dp"
     tools:context="com.cphandheld.spike_ble_location.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello Bluetooth Scanners!" />
-
     <Button
         android:layout_width="100dp"
         android:layout_height="50dp"
         android:text="Scan"
         android:id="@+id/StartScanButton"
-        android:layout_marginTop="40dp"/>
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/StopScanButton"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:text="Stop Scanning"
         android:id="@+id/StopScanButton"
-        android:layout_marginTop="40dp"/>
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"/>
+
+    <!--<TextView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_marginTop="100dp"-->
+        <!--android:id="@+id/PeripheralTextView"-->
+        <!--android:scrollbars="vertical"-->
+        <!--android:maxLines="30" />-->
+    <TextView
+        android:id="@+id/textViewClosestTo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="test"
+        android:layout_below="@+id/StartScanButton"
+        android:layout_alignParentStart="true"/>
 
     <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Closest to:"
+        android:layout_alignBottom="@+id/StartScanButton"
+        android:layout_alignParentStart="true"/>
+
+    <ListView
+        android:id="@+id/listViewBeacons"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="100dp"
-        android:id="@+id/PeripheralTextView"
-        android:scrollbars="vertical"
-        android:maxLines="30" />
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/textViewClosestTo"
+        android:layout_marginTop="24dp"
+        android:dividerHeight="3dp"/>
 
 </RelativeLayout>

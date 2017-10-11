@@ -14,30 +14,46 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.ParcelUuid;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
+
 
 public class MainActivity extends Activity {
 
+    private final static String TAG = MainActivity.class.getSimpleName();
     BluetoothManager btManager;
     BluetoothAdapter btAdapter;
     BluetoothLeScanner btScanner;
     Button startScanningButton;
     Button stopScanningButton;
-    TextView peripheralTextView;
     private final static int REQUEST_ENABLE_BT = 1;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     RunningAverageRssiFilter filter;
+    ArrayList<Beacon> listBeacons;
+    BeaconListAdapter listAdapter;
+    ListView listViewBeacons;
+    TextView textViewClosestTo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        peripheralTextView = (TextView) findViewById(R.id.PeripheralTextView);
-        peripheralTextView.setMovementMethod(new ScrollingMovementMethod());
+//        peripheralTextView = (TextView) findViewById(R.id.PeripheralTextView);
+//        peripheralTextView.setMovementMethod(new ScrollingMovementMethod());
+        textViewClosestTo = (TextView) findViewById(R.id.textViewClosestTo);
 
         startScanningButton = (Button) findViewById(R.id.StartScanButton);
         startScanningButton.setOnClickListener(new View.OnClickListener() {
@@ -58,11 +74,17 @@ public class MainActivity extends Activity {
         btAdapter = btManager.getAdapter();
         btScanner = btAdapter.getBluetoothLeScanner();
 
+        listViewBeacons = (ListView)findViewById(R.id.listViewBeacons);
+
 
         if (btAdapter != null && !btAdapter.isEnabled()) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent,REQUEST_ENABLE_BT);
         }
+
+        listBeacons = new ArrayList<Beacon>();
+        listAdapter = new BeaconListAdapter(this, listBeacons);
+        listViewBeacons.setAdapter(listAdapter);
 
         // Make sure we have access coarse location enabled, if not, prompt the user to enable it
         if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -82,21 +104,55 @@ public class MainActivity extends Activity {
         filter = new RunningAverageRssiFilter();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopScanning();
+    }
+
     // Device scan callback.
     private ScanCallback leScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
 
-            if(result.getDevice().getName() != null && result.getDevice().getName().startsWith("BitStorm")) {
-                peripheralTextView.append("Device Name: " + result.getDevice().getName() + " rssi: " + result.getRssi() + "\n");
-                filter.addMeasurement(result.getRssi());
-                peripheralTextView.append("Running average Rssi: " + filter.calculateRssi() + "\n");
+            if(result.getDevice().getName() != null && result.getDevice().getName().startsWith("Kontakt")) {
+                String name = result.getDevice().getName();
+                String address = result.getDevice().getAddress();
+                int powerLevel = result.getScanRecord().getTxPowerLevel();
+                ParcelUuid uuid = result.getScanRecord().getServiceUuids().get(0);
+                DecimalFormat numberFormat = new DecimalFormat("#.0");
 
-                // auto scroll for text view
-                final int scrollAmount = peripheralTextView.getLayout().getLineTop(peripheralTextView.getLineCount()) - peripheralTextView.getHeight();
-                // if there is no need to scroll, scrollAmount will be <=0
-                if (scrollAmount > 0)
-                    peripheralTextView.scrollTo(0, scrollAmount);
+                int rssi = result.getRssi();
+                boolean devicePreviouslyAdded = false;
+
+                for (Beacon beacon : listBeacons) {
+                    if (beacon.Address.equals(address)) {
+                        beacon.setRssi(rssi);
+                        devicePreviouslyAdded = true;
+                        listAdapter.notifyDataSetChanged();
+                        break;
+                    }
+                }
+
+                if (!devicePreviouslyAdded) {
+                    Beacon beacon = new Beacon(name, uuid, address, rssi, powerLevel);
+                    listBeacons.add(beacon);
+                    listAdapter.notifyDataSetChanged();
+                }
+
+                Collections.sort(listBeacons, new Comparator<Beacon>() {
+                    @Override
+                    public int compare(Beacon o1, Beacon o2) {
+                        return Integer.compare((int) o2.filter.calculateRssi(), (int) o1.filter.calculateRssi());
+                    }
+                });
+
+                Beacon b = listBeacons.get(0);
+                String closestDevice = b.getName() + " : " +
+                        b.getAddress() + " : " +
+                        numberFormat.format(b.filter.calculateRssi());
+                Log.v(TAG, closestDevice);
+                textViewClosestTo.setText(closestDevice);
             }
         }
     };
@@ -129,7 +185,7 @@ public class MainActivity extends Activity {
 
     public void startScanning() {
         System.out.println("start scanning");
-        peripheralTextView.setText("");
+        //peripheralTextView.setText("");
         startScanningButton.setVisibility(View.INVISIBLE);
         stopScanningButton.setVisibility(View.VISIBLE);
         AsyncTask.execute(new Runnable() {
@@ -142,7 +198,7 @@ public class MainActivity extends Activity {
 
     public void stopScanning() {
         System.out.println("stopping scanning");
-        peripheralTextView.append("Stopped Scanning");
+        //peripheralTextView.append("Stopped Scanning");
         startScanningButton.setVisibility(View.VISIBLE);
         stopScanningButton.setVisibility(View.INVISIBLE);
         AsyncTask.execute(new Runnable() {
